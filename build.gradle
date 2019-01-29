@@ -2,3 +2,25 @@ wrapper {
     distributionType = Wrapper.DistributionType.ALL
 }
 
+
+
+subprojects {
+    apply plugin: 'java'
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.4.0-RC1'
+    }
+
+    test {
+        useJUnitPlatform()
+
+        reports {
+            junitXml.enabled = true
+            html.enabled = true
+        }
+    }
+}
