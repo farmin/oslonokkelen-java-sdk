@@ -1,4 +1,5 @@
 rootProject.name = "oslonokkelen-java-sdk"
 
 include 'messages'
-
+include 'simple-cli'
+include 'java-adapter'

@@ -4,7 +4,12 @@ wrapper {
 
 
 ext {
+    commonsCliVersion = '1.4'
     jacksonVersion = '2.9.8'
+    jerseyVersion = '2.28'
+    jettyVersion = '9.4.14.v20181114'
+    logbackVersion = '1.2.3'
+    slf4jVersion = '1.7.25'
 }
 
 subprojects {
