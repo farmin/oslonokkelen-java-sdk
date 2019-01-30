@@ -1,0 +1,37 @@
+
+
+
+// id "com.jfrog.bintray" version "1.8.4"
+
+subprojects {
+    if (project.plugins.hasPlugin('java')) {
+        apply plugin: 'maven-publish'
+        apply plugin: 'java-library'
+
+
+        task sourcesJar(type: Jar) {
+            classifier = 'sources'
+            from sourceSets.main.allJava
+        }
+
+        task javadocJar(type: Jar) {
+            classifier = 'javadoc'
+            from javadoc.destinationDir
+        }
+
+        publishing {
+            publications {
+                maven(MavenPublication) {
+                    groupId = 'no.kommune.oslo.nokkelen'
+                    artifactId = project.name
+                    version = '0.0.1'
+
+                    from components.java
+
+                    artifact sourcesJar
+                    artifact javadocJar
+                }
+            }
+        }
+    }
+}
