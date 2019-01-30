@@ -26,6 +26,7 @@ public class OslonokkelenClient implements AutoCloseable {
   private final AdapterController controller;
   private final AuthClient authClient;
   private final ClientCredentials clientCredentials;
+  private final HttpClient httpClient;
 
   private AuthToken token;
 
@@ -37,6 +38,11 @@ public class OslonokkelenClient implements AutoCloseable {
                             ClientCredentials clientCredentials,
                             AdapterController controller) {
 
+    this.httpClient = new HttpClient();
+    this.httpClient.setConnectTimeout(Duration.ofSeconds(10).toMillis());
+    this.httpClient.setAddressResolutionTimeout(Duration.ofSeconds(2).toMillis());
+    this.httpClient.setIdleTimeout(Duration.ofMinutes(60).toMillis());
+
     this.clientCredentials = clientCredentials;
     this.serviceBaseURI = serviceBaseURI;
     this.authClient = authClient;
@@ -44,11 +50,8 @@ public class OslonokkelenClient implements AutoCloseable {
     this.jackson = jackson;
   }
 
-  public void start(LocalState state) {
-    HttpClient httpClient = new HttpClient();
-    httpClient.setConnectTimeout(Duration.ofSeconds(10).toMillis());
-    httpClient.setAddressResolutionTimeout(Duration.ofSeconds(2).toMillis());
-    httpClient.setIdleTimeout(Duration.ofMinutes(60).toMillis());
+  public void start(LocalState state) throws Exception {
+    httpClient.start();
 
     WebSocketClient websocketClient = new WebSocketClient(httpClient);
     websocketClient.setMaxIdleTimeout(Duration.ofMinutes(60).toMillis());
@@ -141,6 +144,15 @@ public class OslonokkelenClient implements AutoCloseable {
     }
     catch (Exception ex) {
       log.warn("Something went wrong during stop", ex);
+    }
+
+
+    try {
+      log.debug("Stopping http client");
+      httpClient.stop();
+    }
+    catch (Exception ex) {
+      log.warn("Failed to stop http client", ex);
     }
   }
 

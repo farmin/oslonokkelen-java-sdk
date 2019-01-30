@@ -79,8 +79,13 @@ public abstract class AdapterCliApplication<C extends AdapterController> {
 
   private Thread startWebsocket(LocalState state, OslonokkelenClient oslonokkelenClient) {
     Runnable runnable = () -> {
-      log.info("Starting websocket..");
-      oslonokkelenClient.start(state);
+      try {
+        log.info("Starting websocket..");
+        oslonokkelenClient.start(state);
+      }
+      catch (Exception ex) {
+        throw new IllegalStateException("Failed to start client", ex);
+      }
     };
 
     return new Thread(runnable, "websocket-client");
