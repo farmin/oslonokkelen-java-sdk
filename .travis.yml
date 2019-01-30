@@ -7,12 +7,12 @@ jdk:
 jobs:
   include:
     - stage: Build
-      script: "./gradlew --stacktrace jar"
+      script: "./gradlew --daemon --stacktrace jar"
     - stage: Unit tests
-      script: "./gradlew --stacktrace test"
+      script: "./gradlew --daemon --stacktrace test"
     - stage: Deploy to Bintray
       if: branch = master
-      script: "./gradle --no-configure-on-demand --no-parallel --stacktrace -PbintrayUser=oslonokkelen -PbintrayKey=$BINTRAY_KEY
+      script: "./gradle --daemon --no-configure-on-demand --no-parallel --stacktrace -PbintrayUser=oslonokkelen -PbintrayKey=$BINTRAY_KEY
   bintrayUpload"
 
 before_cache:
