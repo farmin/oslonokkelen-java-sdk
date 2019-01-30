@@ -1,6 +1,10 @@
-wrapper {
-    distributionType = Wrapper.DistributionType.ALL
+plugins {
+    id "com.jfrog.bintray" version "1.8.4" apply false
 }
+/*
+
+
+*/
 
 
 ext {
@@ -31,4 +35,10 @@ subprojects {
             html.enabled = true
         }
     }
+}
+
+apply from: 'publishing.gradle'
+
+wrapper {
+    distributionType = Wrapper.DistributionType.ALL
 }

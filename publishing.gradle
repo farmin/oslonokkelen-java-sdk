@@ -1,35 +1,49 @@
 
 
+if (project.hasProperty("bintrayUser") && project.hasProperty("bintrayKey")) {
+    subprojects {
+        if (project.plugins.hasPlugin('java')) {
+            apply plugin: 'com.jfrog.bintray'
+            apply plugin: 'maven-publish'
+            apply plugin: 'java-library'
 
-// id "com.jfrog.bintray" version "1.8.4"
 
-subprojects {
-    if (project.plugins.hasPlugin('java')) {
-        apply plugin: 'maven-publish'
-        apply plugin: 'java-library'
+            task sourcesJar(type: Jar) {
+                classifier = 'sources'
+                from sourceSets.main.allJava
+            }
 
+            task javadocJar(type: Jar) {
+                classifier = 'javadoc'
+                from javadoc.destinationDir
+            }
 
-        task sourcesJar(type: Jar) {
-            classifier = 'sources'
-            from sourceSets.main.allJava
-        }
+            publishing {
+                publications {
+                    maven(MavenPublication) {
+                        groupId = 'no.kommune.oslo.nokkelen'
+                        artifactId = project.name
+                        version = '0.0.1'
 
-        task javadocJar(type: Jar) {
-            classifier = 'javadoc'
-            from javadoc.destinationDir
-        }
+                        from components.java
 
-        publishing {
-            publications {
-                maven(MavenPublication) {
-                    groupId = 'no.kommune.oslo.nokkelen'
-                    artifactId = project.name
-                    version = '0.0.1'
+                        artifact sourcesJar
+                        artifact javadocJar
+                    }
+                }
+            }
 
-                    from components.java
+            bintray {
+                user = project.property("bintrayUser")
+                key = project.property("bintrayKey")
+                publications = ['maven']
 
-                    artifact sourcesJar
-                    artifact javadocJar
+                pkg {
+                    repo = 'oslonokkelen-mvn'
+                    name = 'oslonokkelen-java-sdk'
+                    userOrg = 'oslonokkelen'
+                    licenses = ['Apache-2.0']
+                    vcsUrl = 'git@github.com:oslokommune/oslonokkelen-java-sdk.git'
                 }
             }
         }
