@@ -5,7 +5,25 @@
 Java SDK for Oslonøkkelen (proof of concept)
 
 
+Artefacts 
+---------
+The project is separated into three different artefacts
 
+1. Messages
+2. Java adapter
+3. Simple CLI
+
+### Messages 
+
+Defines the messages that are sent between client and backend. 
+
+### Java Adapter 
+
+A proof of concept reference implementation of an adapter.
+
+### Simple CLI
+
+An opinionated approach to an adapter distributed as an executable jar file.
 
 Travis
 ------

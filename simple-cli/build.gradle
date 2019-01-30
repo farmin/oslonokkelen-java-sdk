@@ -1,7 +1,8 @@
 dependencies {
-    implementation "commons-cli:commons-cli:$commonsCliVersion"
-    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    compile "commons-cli:commons-cli:$commonsCliVersion"
+
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     
-    implementation project(':java-adapter')
+    compile project(':java-adapter')
 }

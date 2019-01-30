@@ -7,11 +7,11 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Scanner;
 
-public class BannerPrinter {
+class BannerPrinter {
 
   private final static Logger log = LoggerFactory.getLogger(BannerPrinter.class);
 
-  public static void printBanner() {
+  static void printBanner() {
     try {
       URL resource = BannerPrinter.class.getResource("/banner.txt");
       if (resource == null) {
