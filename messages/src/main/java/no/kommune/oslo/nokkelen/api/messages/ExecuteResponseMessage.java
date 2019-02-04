@@ -75,10 +75,16 @@ public class ExecuteResponseMessage extends AdapterMessage {
 
   public enum Status {
 
+    /** Everything went well */
     OK,
 
+    /** Something is really wrong, no need trying again */
     ERROR,
 
+    /** Something didn't go as planned, but it might be temporary. Feel free to try again. */
+    HICCUP,
+
+    /** User was denied access. No ened trying again. */
     ACCESS_DENIED
 
   }
