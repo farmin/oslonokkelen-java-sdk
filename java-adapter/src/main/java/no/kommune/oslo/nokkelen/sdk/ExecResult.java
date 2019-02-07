@@ -14,7 +14,11 @@ public class ExecResult {
 
   private final Map<String, String> properties = new HashMap<>();
 
-  private ExecResult(ExecuteResponseMessage.Status status, String message) {
+  public ExecResult(ExecuteResponseMessage.Status status, String message) {
+    if (status == null) {
+      throw new IllegalArgumentException("Status is mandatory");
+    }
+
     this.message = message;
     this.status = status;
   }
@@ -30,6 +34,12 @@ public class ExecResult {
   public static ExecResult accessDenied(String message) {
     return new ExecResult(ExecuteResponseMessage.Status.ACCESS_DENIED, message);
   }
+
+  public static ExecResult hiccup(String message) {
+    return new ExecResult(ExecuteResponseMessage.Status.HICCUP, message);
+  }
+
+
 
   public ExecResult withProperty(String key, String value) {
     this.properties.put(key, value);
