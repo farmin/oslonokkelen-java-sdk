@@ -77,7 +77,7 @@ class MessageRouter {
   }
 
   void ping(MessageSink sink, PingMessage message) {
-    log.info("Got ping from server, responding med pong");
+    log.debug("Got ping from server, responding med pong");
     AdapterMessage reply = new AdapterPongMessage(message.getServerTime(), "Alt vel!");
     sink.sendMessage(reply);
   }
