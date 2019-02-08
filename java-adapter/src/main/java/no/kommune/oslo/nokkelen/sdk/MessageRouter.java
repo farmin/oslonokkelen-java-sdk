@@ -1,6 +1,7 @@
 package no.kommune.oslo.nokkelen.sdk;
 
 import no.kommune.oslo.nokkelen.api.data.AdapterThingDto;
+import no.kommune.oslo.nokkelen.api.data.PreDefinedError;
 import no.kommune.oslo.nokkelen.api.messages.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static no.kommune.oslo.nokkelen.api.data.PreDefinedError.UNKNOWN_ERROR;
 
 class MessageRouter {
 
@@ -56,23 +59,24 @@ class MessageRouter {
 
     try {
       ExecResult result = action.execute(request);
-      ExecuteResponseMessage responseMessage = createResponseMessage(command, result.message(), result.status(), result.props());
+      ExecuteResponseMessage responseMessage = createResponseMessage(command, result.message(), result.status(), result.props(), result.errorCode());
       sink.sendMessage(responseMessage);
     }
     catch (Exception ex) {
       log.error("Failed executing {}", command, ex);
-      ExecuteResponseMessage responseMessage = createResponseMessage(command, ex.getMessage(), ExecuteResponseMessage.Status.ERROR, Collections.emptyMap());
+      ExecuteResponseMessage responseMessage = createResponseMessage(command, ex.getMessage(), ExecuteResponseMessage.Status.ERROR, Collections.emptyMap(), UNKNOWN_ERROR.code());
       sink.sendMessage(responseMessage);
     }
   }
 
-  private ExecuteResponseMessage createResponseMessage(ExecuteActionMessage command, String message, ExecuteResponseMessage.Status status, Map<String, String> props) {
+  private ExecuteResponseMessage createResponseMessage(ExecuteActionMessage command, String message, ExecuteResponseMessage.Status status, Map<String, String> props, String errorCode) {
     return new ExecuteResponseMessage (
             command.getAppSourceId(),
             command.getRequestId(),
             props,
             message,
-            status
+            status,
+            errorCode
     );
   }
 

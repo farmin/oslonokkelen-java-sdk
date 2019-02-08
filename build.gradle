@@ -15,12 +15,15 @@ ext {
 subprojects {
     apply plugin: 'java'
 
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
+
     repositories {
         jcenter()
     }
 
     dependencies {
-        testImplementation 'org.junit.jupiter:junit-jupiter:5.4.0-RC1'
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.4.0'
     }
 
     test {

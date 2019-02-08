@@ -13,8 +13,10 @@ public class ExecResult {
   private final String message;
 
   private final Map<String, String> properties = new HashMap<>();
+  private final String errorCode;
 
-  public ExecResult(ExecuteResponseMessage.Status status, String message) {
+  public ExecResult(ExecuteResponseMessage.Status status, String errorCode, String message) {
+    this.errorCode = errorCode;
     if (status == null) {
       throw new IllegalArgumentException("Status is mandatory");
     }
@@ -24,19 +26,19 @@ public class ExecResult {
   }
 
   public static ExecResult success(String message) {
-    return new ExecResult(ExecuteResponseMessage.Status.OK, message);
+    return new ExecResult(ExecuteResponseMessage.Status.OK, null, message);
   }
 
-  public static ExecResult error(String message) {
-    return new ExecResult(ExecuteResponseMessage.Status.ERROR, message);
+  public static ExecResult error(String errorCode, String message) {
+    return new ExecResult(ExecuteResponseMessage.Status.ERROR, errorCode, message);
   }
 
-  public static ExecResult accessDenied(String message) {
-    return new ExecResult(ExecuteResponseMessage.Status.ACCESS_DENIED, message);
+  public static ExecResult accessDenied(String errorCode, String message) {
+    return new ExecResult(ExecuteResponseMessage.Status.ACCESS_DENIED, errorCode, message);
   }
 
-  public static ExecResult hiccup(String message) {
-    return new ExecResult(ExecuteResponseMessage.Status.HICCUP, message);
+  public static ExecResult hiccup(String errorCode, String message) {
+    return new ExecResult(ExecuteResponseMessage.Status.HICCUP, errorCode, message);
   }
 
 
@@ -77,4 +79,7 @@ public class ExecResult {
     return properties;
   }
 
+  public String errorCode() {
+    return errorCode;
+  }
 }

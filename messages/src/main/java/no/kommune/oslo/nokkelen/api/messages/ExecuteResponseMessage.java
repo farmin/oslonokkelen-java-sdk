@@ -8,10 +8,30 @@ import java.util.Objects;
 
 public class ExecuteResponseMessage extends AdapterMessage {
 
+  /**
+   * Copy this from the incoming message.
+   */
   private final String appSourceId;
+
+  /**
+   * Copy this from the incoming message.
+   */
   private final String requestId;
-  private final String message;
+
   private final Status status;
+
+  /**
+   * This code will be translated into a human
+   * readable message.
+   */
+  private final String errorCode;
+
+  /**
+   * Can be used for communicating a technical description
+   * of why something went wrong. It will not be sent to the end user.
+   */
+  private final String message;
+
   private final Map<String, String> properties;
 
   @JsonCreator
@@ -19,7 +39,8 @@ public class ExecuteResponseMessage extends AdapterMessage {
                                 @JsonProperty("requestId") String requestId,
                                 @JsonProperty("properties") Map<String, String> properties,
                                 @JsonProperty("message") String message,
-                                @JsonProperty("status") Status status) {
+                                @JsonProperty("status") Status status,
+                                @JsonProperty("errorCode") String errorCode) {
 
     if (requestId == null) {
       throw new IllegalArgumentException("Original request id is mandatory");
@@ -27,6 +48,7 @@ public class ExecuteResponseMessage extends AdapterMessage {
 
     this.properties = properties;
     this.appSourceId = appSourceId;
+    this.errorCode = errorCode;
     this.requestId = requestId;
     this.message = message;
     this.status = status;
@@ -52,10 +74,15 @@ public class ExecuteResponseMessage extends AdapterMessage {
     return properties;
   }
 
+  public String getErrorCode() {
+    return errorCode;
+  }
+
   @Override
   public String toString() {
     return String.format("Reply to execute request %s: %s", requestId, status);
   }
+
 
   @Override
   public boolean equals(Object o) {
@@ -63,14 +90,16 @@ public class ExecuteResponseMessage extends AdapterMessage {
     if (o == null || getClass() != o.getClass()) return false;
     ExecuteResponseMessage that = (ExecuteResponseMessage) o;
     return Objects.equals(appSourceId, that.appSourceId) &&
-            Objects.equals(requestId, that.requestId) &&
-            Objects.equals(message, that.message) &&
-            status == that.status;
+        Objects.equals(requestId, that.requestId) &&
+        status == that.status &&
+        Objects.equals(errorCode, that.errorCode) &&
+        Objects.equals(message, that.message) &&
+        Objects.equals(properties, that.properties);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(appSourceId, requestId, message, status);
+    return Objects.hash(appSourceId, requestId, status, errorCode, message, properties);
   }
 
   public enum Status {

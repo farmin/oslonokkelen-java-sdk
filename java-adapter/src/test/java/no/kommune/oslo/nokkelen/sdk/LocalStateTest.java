@@ -21,7 +21,7 @@ class LocalStateTest {
 
       tb.action("unlock", (ob) -> {
         ob.requiredActionParameters("id");
-        return (request) -> ExecResult.error("F...");
+        return (request) -> ExecResult.error("x", "F...");
       });
     });
   }
