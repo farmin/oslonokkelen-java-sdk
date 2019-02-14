@@ -1,20 +1,16 @@
 package no.kommune.oslo.nokkelen.sdk;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import no.kommune.oslo.nokkelen.sdk.auth.AuthClient;
 import no.kommune.oslo.nokkelen.sdk.auth.AuthToken;
 import no.kommune.oslo.nokkelen.sdk.auth.ClientCredentials;
-import org.eclipse.jetty.client.HttpClient;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.time.Duration;
-import java.util.concurrent.Future;
 
+import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 public class OslonokkelenClient implements AutoCloseable {
@@ -22,55 +18,49 @@ public class OslonokkelenClient implements AutoCloseable {
   private static final Logger log = LoggerFactory.getLogger(OslonokkelenClient.class);
 
   private final URI serviceBaseURI;
-  private final ObjectMapper jackson;
   private final AdapterController controller;
   private final AuthClient authClient;
   private final ClientCredentials clientCredentials;
-  private final HttpClient httpClient;
+  private final OkHttpClient httpClient;
 
   private AuthToken token;
 
 
 
   public OslonokkelenClient(URI serviceBaseURI,
-                            ObjectMapper jackson,
                             AuthClient authClient,
                             ClientCredentials clientCredentials,
                             AdapterController controller) {
 
-    this.httpClient = new HttpClient();
-    this.httpClient.setConnectTimeout(Duration.ofSeconds(10).toMillis());
-    this.httpClient.setAddressResolutionTimeout(Duration.ofSeconds(2).toMillis());
-    this.httpClient.setIdleTimeout(Duration.ofMinutes(60).toMillis());
+    this.httpClient = new OkHttpClient.Builder()
+        .connectTimeout(4, SECONDS)
+        .readTimeout(10, MINUTES)
+        .writeTimeout(10, SECONDS)
+        .build();
 
     this.clientCredentials = clientCredentials;
-    this.serviceBaseURI = serviceBaseURI;
+    this.serviceBaseURI = URI.create(serviceBaseURI.toString() + "/v1/adapter/ws");
     this.authClient = authClient;
     this.controller = controller;
-    this.jackson = jackson;
   }
 
-  public void start(LocalState state) throws Exception {
-    httpClient.start();
-
-    WebSocketClient websocketClient = new WebSocketClient(httpClient);
-    websocketClient.setMaxIdleTimeout(Duration.ofMinutes(60).toMillis());
-
+  public void start(LocalState state) {
     MessageRouter router = new MessageRouter(state);
 
 
     while (!Thread.currentThread().isInterrupted()) {
-      log.info("Connecting to {}...", serviceBaseURI);
+      log.info("Connecting to {}", serviceBaseURI);
+      var socketListener = new OslonokkelenSocketListener(controller, router);
 
       try {
-        authenticate();
-        websocketClient.start();
+        var request = createRequest();
+        httpClient.newWebSocket(request, socketListener);
 
-        WsClientSocket socket = new WsClientSocket(controller, router, jackson);
-        connect(websocketClient, socket);
+        log.info("Establishing connection...");
+        socketListener.awaitConnection();
 
-        log.info("Waiting for socket to close..");
-        socket.awaitClose();
+        log.info("We are connected!");
+        socketListener.awaitClose();
       }
       catch (InterruptedException ex) {
         log.info("Got interrupted");
@@ -78,7 +68,7 @@ public class OslonokkelenClient implements AutoCloseable {
 
         try {
           log.info("Stopping websocket client");
-          websocketClient.stop();
+          socketListener.disconnect();
         }
         catch (Exception ex2) {
           log.warn("Got exception trying to stop client", ex2);
@@ -90,6 +80,14 @@ public class OslonokkelenClient implements AutoCloseable {
 
       sleep();
     }
+  }
+
+  private Request createRequest() {
+    AuthToken token = authenticate();
+
+    return new Request.Builder()
+        .url(token.accessEndpoint(serviceBaseURI).toString())
+        .build();
   }
 
   private void sleep() {
@@ -106,7 +104,7 @@ public class OslonokkelenClient implements AutoCloseable {
     }
   }
 
-  private void authenticate() {
+  private AuthToken authenticate() {
     if (token == null) {
       token = authClient.authenticate(clientCredentials);
     }
@@ -114,14 +112,8 @@ public class OslonokkelenClient implements AutoCloseable {
       token = authClient.refresh(clientCredentials, token);
     }
 
-    log.info("Authenticated");
-  }
-
-  private void connect(WebSocketClient client, WsClientSocket socket) throws Exception {
-    URI uri = URI.create(serviceBaseURI + "/v1/adapter/ws");
-    ClientUpgradeRequest request = new ClientUpgradeRequest();
-    Future<Session> connect = client.connect(socket, token.accessEndpoint(uri), request);
-    connect.get(5, SECONDS);
+    log.info("Authenticated: {}", token);
+    return token;
   }
 
   @Override
@@ -149,7 +141,8 @@ public class OslonokkelenClient implements AutoCloseable {
 
     try {
       log.debug("Stopping http client");
-      httpClient.stop();
+      httpClient.dispatcher().executorService().shutdown();
+      httpClient.connectionPool().evictAll();
     }
     catch (Exception ex) {
       log.warn("Failed to stop http client", ex);

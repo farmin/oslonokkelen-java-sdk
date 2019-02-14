@@ -44,4 +44,9 @@ public class AuthToken {
     return accessToken;
   }
 
+  @Override
+  public String toString() {
+    return "Auth token, refresh expiring at " + refreshExpires;
+  }
+
 }

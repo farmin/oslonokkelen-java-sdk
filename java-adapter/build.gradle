@@ -3,19 +3,14 @@
 
 dependencies {
     
-    implementation "org.glassfish.jersey.core:jersey-client:$jerseyVersion"
-    implementation "org.glassfish.jersey.inject:jersey-hk2:$jerseyVersion"
-    implementation "org.glassfish.jersey.media:jersey-media-json-jackson:$jerseyVersion"
-
-
-    implementation "org.eclipse.jetty.websocket:websocket-client:$jettyVersion"
-
+    implementation 'com.squareup.okhttp3:okhttp:' + okHttpVersion
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jacksonVersion"
     implementation "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jacksonVersion"
     
-    implementation "org.slf4j:slf4j-api:$slf4jVersion"
-
     compile project(":messages")
+    
 }
 

@@ -1,8 +1,6 @@
 package no.kommune.oslo.nokkelen.cli;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import no.kommune.oslo.nokkelen.sdk.AdapterController;
-import no.kommune.oslo.nokkelen.sdk.JacksonFactory;
 import no.kommune.oslo.nokkelen.sdk.LocalState;
 import no.kommune.oslo.nokkelen.sdk.OslonokkelenClient;
 import no.kommune.oslo.nokkelen.sdk.auth.AuthClient;
@@ -157,9 +155,8 @@ public abstract class AdapterCliApplication<C extends AdapterController> {
     AuthClient authClient = createAuthClient(commandLine);
     ClientCredentials clientCredentials = createClientCredentials(commandLine);
     URI uri = new URI(commandLine.getOptionValue("ws"));
-    ObjectMapper jackson = JacksonFactory.createObjectMapper();
 
-    return new OslonokkelenClient(uri, jackson, authClient, clientCredentials, controller);
+    return new OslonokkelenClient(uri, authClient, clientCredentials, controller);
   }
 
   private Options createOptions() {
