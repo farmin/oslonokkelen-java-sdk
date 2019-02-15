@@ -75,7 +75,7 @@ public class KeycloakAuthClient implements AuthClient {
     }
   }
 
-  AuthToken requestTokens(Map<String, String> formData) {
+  protected AuthToken requestTokens(Map<String, String> formData) {
     Request request = new Request.Builder()
         .url(authURI)
         .post(withForm(formData))
@@ -134,7 +134,7 @@ public class KeycloakAuthClient implements AuthClient {
     invokeLogoutTarget(formData);
   }
 
-  void invokeLogoutTarget(Map<String, String> formData) {
+  protected void invokeLogoutTarget(Map<String, String> formData) {
     Request request = new Request.Builder()
         .url(logoutURI)
         .post(withForm(formData))
