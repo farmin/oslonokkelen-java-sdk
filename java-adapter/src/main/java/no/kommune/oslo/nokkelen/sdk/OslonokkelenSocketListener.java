@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class OslonokkelenSocketListener extends WebSocketListener implements MessageSink {
 
@@ -97,6 +98,8 @@ public class OslonokkelenSocketListener extends WebSocketListener implements Mes
   public void onFailure(WebSocket webSocket, Throwable trouble, Response response) {
     log.error("Something failed, we will terminate the connection: ", trouble);
     disconnect();
+    this.closeLatch.countDown();
+    this.connectLatch.countDown();
   }
 
   @Override
@@ -111,9 +114,9 @@ public class OslonokkelenSocketListener extends WebSocketListener implements Mes
     this.closeLatch.await();
   }
 
-  void awaitConnection() throws InterruptedException {
+  boolean awaitConnection(int time, TimeUnit unit) throws InterruptedException {
     try {
-      connectLatch.await();
+      return connectLatch.await(time, unit);
     }
     catch (InterruptedException ex) {
       log.warn("Got interrupted while waiting for connection...");
@@ -123,8 +126,13 @@ public class OslonokkelenSocketListener extends WebSocketListener implements Mes
   }
 
   void disconnect() {
-    log.info("Closing websocket");
-    socket.close(1000, "Bye!");
+    if (socket != null) {
+      log.info("Closing websocket");
+      socket.close(1000, "Bye!");
+    }
+    else {
+      log.info("Not connected");
+    }
   }
 
 }

@@ -36,6 +36,7 @@ public class OslonokkelenClient implements AutoCloseable {
         .connectTimeout(4, SECONDS)
         .readTimeout(10, MINUTES)
         .writeTimeout(10, SECONDS)
+        .pingInterval(10, SECONDS)
         .build();
 
     this.clientCredentials = clientCredentials;
@@ -57,10 +58,13 @@ public class OslonokkelenClient implements AutoCloseable {
         httpClient.newWebSocket(request, socketListener);
 
         log.info("Establishing connection...");
-        socketListener.awaitConnection();
-
-        log.info("We are connected!");
-        socketListener.awaitClose();
+        if (!socketListener.awaitConnection(15, SECONDS)) {
+          log.warn("Failed to establish connection, will try again in a few seconds");
+        }
+        else {
+          log.info("We are connected, hanging around until the connection goes down..");
+          socketListener.awaitClose();
+        }
       }
       catch (InterruptedException ex) {
         log.info("Got interrupted");
