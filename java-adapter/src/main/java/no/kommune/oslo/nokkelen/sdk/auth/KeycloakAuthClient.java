@@ -75,7 +75,7 @@ public class KeycloakAuthClient implements AuthClient {
     }
   }
 
-  private AuthToken requestTokens(Map<String, String> formData) {
+  AuthToken requestTokens(Map<String, String> formData) {
     Request request = new Request.Builder()
         .url(authURI)
         .post(withForm(formData))
@@ -134,14 +134,14 @@ public class KeycloakAuthClient implements AuthClient {
     invokeLogoutTarget(formData);
   }
 
-  private void invokeLogoutTarget(Map<String, String> formData) {
+  void invokeLogoutTarget(Map<String, String> formData) {
     Request request = new Request.Builder()
         .url(logoutURI)
         .post(withForm(formData))
         .build();
 
     try (Response response = client.newCall(request).execute()) {
-      System.out.println(response);
+      log.trace("Logged out {}", response);
     }
     catch (Exception ex) {
       throw new IllegalStateException("Failed to log out", ex);
