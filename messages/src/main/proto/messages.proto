@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package oslonokkelen.messages;
+
+option java_package = "no.kommune.oslo.oslonokkelen.messages";
+
+import "data.proto";
+
+
+/* This is the first message the adapter is supposed to send after connecting. */
+message ManifestMessage {
+
+
+    /* A patch message will update / replace a subset of things the backend already know.
+     * By setting patch = false the backend will replace everything it knows about the
+     * things attached to the adapter with the content of this message.
+     *
+     * Patch messages are probably most useful if you have a lot of things attached to
+     * your adapter.. */
+    bool patch = 1;
+
+    /* An updated description of all the things attached to the adapter right now. */
+    repeated oslonokkelen.data.ThingDescription things = 2;
+
+}
+
+message PropertyUpdateMessage {
+
+    /* Identifies the message. Backend will acknowledge received property updates. */
+    string messageId = 1;
+
+    oneof update {
+
+        BatteryLevel batteryLevel = 2;
+
+        Locked locked = 3;
+
+        Open open = 4;
+
+        StatusMessage statusMessage = 5;
+
+        Other other = 6;
+
+    } ;
+
+    message BatteryLevel {
+
+        int32 percent = 1;
+
+    }
+
+    message Locked {
+
+        oslonokkelen.data.State state = 1;
+
+    }
+
+    message Open {
+
+        oslonokkelen.data.State inOpenPosition = 1;
+
+    }
+
+
+    message StatusMessage {
+
+        string message = 1;
+
+    }
+
+    message Other {
+
+        string id = 1;
+        string value = 2;
+
+    }
+
+}
+
