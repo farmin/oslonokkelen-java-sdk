@@ -7,6 +7,52 @@ option java_package = "no.kommune.oslo.oslonokkelen.messages";
 import "google/protobuf/timestamp.proto";
 import "data.proto";
 
+/* Messages that can be initiated by the server */
+message ServerInitiatedMessage {
+
+    oneof message {
+
+        ReceiptMessage receipt = 1;
+
+    };
+
+}
+
+/* Messages that can be initiated by the client */
+message ClientInitiatedMessage {
+
+    oneof message {
+
+        ReceiptMessage receipt = 1;
+
+        ManifestMessage manifest = 2;
+
+        PropertyUpdateMessage propertyUpdate = 3;
+
+    };
+
+}
+
+message ReceiptMessage {
+
+    /* The id of the message that are acknowledged or not acknowledged */
+    string receiptForMessageId = 1;
+
+    /* An optional status message intended for debugging */
+    string message = 2;
+
+
+    enum Result {
+
+        /* Acknowledged */
+        ACK = 0;
+
+        /* Not acknowledged. */
+        NAK = 1;
+
+    }
+
+}
 
 /* This is the first message the adapter is supposed to send after connecting. */
 message ManifestMessage {
