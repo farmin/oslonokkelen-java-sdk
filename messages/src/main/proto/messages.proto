@@ -4,11 +4,15 @@ package oslonokkelen.messages;
 
 option java_package = "no.kommune.oslo.oslonokkelen.messages";
 
+import "google/protobuf/timestamp.proto";
 import "data.proto";
 
 
 /* This is the first message the adapter is supposed to send after connecting. */
 message ManifestMessage {
+
+    /* Identifies the message. Can be used to correlated an ack / nak message. */
+    string messageId = 1;
 
 
     /* A patch message will update / replace a subset of things the backend already know.
@@ -17,31 +21,41 @@ message ManifestMessage {
      *
      * Patch messages are probably most useful if you have a lot of things attached to
      * your adapter.. */
-    bool patch = 1;
+    bool patch = 2;
 
     /* An updated description of all the things attached to the adapter right now. */
-    repeated oslonokkelen.data.ThingDescription things = 2;
+    repeated oslonokkelen.data.ThingDescription things = 3;
 
 }
 
+/* Send an update describing some state change for a given thing. This can be things like
+   a battery status update or that the door is now in an open position. */
 message PropertyUpdateMessage {
 
     /* Identifies the message. Backend will acknowledge received property updates. */
     string messageId = 1;
 
+    /* Identifies the thing */
+    string thingId = 2;
+
+    /* When the state change occurred. Useful to deal with messages arriving out of order
+     * or being re-transmitted in case of failure. */
+    google.protobuf.Timestamp timestamp = 4;
+
     oneof update {
 
-        BatteryLevel batteryLevel = 2;
+        BatteryLevel batteryLevel = 5;
 
-        Locked locked = 3;
+        Locked locked = 6;
 
-        Open open = 4;
+        Open open = 7;
 
-        StatusMessage statusMessage = 5;
+        StatusMessage statusMessage = 8;
 
-        Other other = 6;
+        Other other = 9;
 
-    } ;
+    };
+
 
     message BatteryLevel {
 
@@ -60,7 +74,6 @@ message PropertyUpdateMessage {
         oslonokkelen.data.State inOpenPosition = 1;
 
     }
-
 
     message StatusMessage {
 
