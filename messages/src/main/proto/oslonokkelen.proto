@@ -1,17 +1,23 @@
-syntax = "proto2";
+syntax = "proto3";
 
 package oslonokkelen;
 
 option java_package = "no.kommune.oslo.oslonokkelen";
 
 
-
+/* This is the first message the adapter is supposed to send after connecting. */
 message ManifestMessage {
 
 
-    /*  */
-    required bool patch = 1;
+    /* A patch message will update / replace a subset of things the backend already know.
+     * By setting patch = false the backend will replace everything it knows about the
+     * things attached to the adapter with the content of this message.
+     *
+     * Patch messages are probably most useful if you have a lot of things attached to
+     * your adapter.. */
+    bool patch = 1;
 
+    /* An updated description of all the things attached to the adapter right now. */
     repeated ThingDescription things = 2;
 
 }
@@ -22,7 +28,7 @@ message ManifestMessage {
 message ThingDescription {
 
     /* Something that identifies the thing within the adapter */
-    required string id = 1;
+    string id = 1;
 
 
     /* All the things the action can do */
@@ -40,20 +46,69 @@ message ThingDescription {
 message ThingPropertyDescription {
 
     /* An id that identifies the property description within the thing */
-    required string id = 1;
+    string id = 1;
 
-
+    repeated ActionDescription actions = 2;
 
 }
 
+/*  An action is something a thing can do like unlocking a door or turning on the lights */
+message ActionDescription {
 
+    /* Identifies the action within the thing it is attached to */
+    string id = 1;
 
+    /* A human readable description of the action */
+    string description = 2;
+
+    /* The adapter can require information about the actor / person behind the
+     * request to execute an action. Based on this information it can decide to
+     * deny the request. */
+    repeated RequiredActorProfileParameter requiredActorProfileParameters = 3;
+
+    /* Description of the input parameters for this operation */
+    repeated RequiredInputParameter requiredInputParameters = 4;
+
+}
+
+/* Some messages might be parameterized. For example changing the color of a light
+ * bulb will probably require the user to choose the color. */
+message RequiredInputParameter {
+
+    /* Identifies the parameters, example: color, duration.. */
+    string property = 1;
+
+    /* An optional, human readable description of the parameter */
+    string description = 2;
+
+}
+
+/* Describes user information in order to execute an action */
+message RequiredActorProfileParameter {
+
+    /* The parameter */
+    ActorProfileParameter parameter = 1;
+
+    /* A human readable message explaining why this information is */
+    string why = 2;
+
+}
+
+/* Profile information the adapter can request.
+ * Remember that in a GDPR world you need to justify this each and every one of these.. */
+enum ActorProfileParameter {
+
+    NATIONAL_PERSON_ID_NUMBER = 0;
+
+    FULL_NAME = 1;
+
+}
 
 
 message PropertyUpdateMessage {
 
     /* Identifies the message. Backend will acknowledge received property updates. */
-    required string messageId = 1;
+    string messageId = 1;
 
     oneof update {
 
@@ -71,33 +126,33 @@ message PropertyUpdateMessage {
 
     message BatteryLevel {
 
-        required int32 percent = 1;
+        int32 percent = 1;
 
     }
 
     message Locked {
 
-        required State state = 1;
+        State state = 1;
 
     }
 
     message Open {
 
-        required State inOpenPosition = 1;
+        State inOpenPosition = 1;
 
     }
 
 
     message StatusMessage {
 
-        required string message = 1;
+        string message = 1;
 
     }
 
     message Other {
 
-        required string id = 1;
-        required string value = 2;
+        string id = 1;
+        string value = 2;
 
     }
 
@@ -118,16 +173,7 @@ enum State {
 }
 
 
-/* An action is something a thing can do like unlocking a door or turning on the lights */
-message ActionDescription {
 
-    /* Identifies the action within the thing it is attached to */
-    required string id = 1;
-
-    /* A human readable description of the action */
-    optional string description = 2;
-
-}
 
 
 
