@@ -1,0 +1,144 @@
+syntax = "proto2";
+
+package oslonokkelen;
+
+option java_package = "no.kommune.oslo.oslonokkelen";
+
+
+
+message ManifestMessage {
+
+
+    /*  */
+    required bool patch = 1;
+
+    repeated ThingDescription things = 2;
+
+}
+
+
+/* Describes a thing attached to the adapter.
+ * This can be doors, z-wave controllers, light bulbs.. */
+message ThingDescription {
+
+    /* Something that identifies the thing within the adapter */
+    required string id = 1;
+
+
+    /* All the things the action can do */
+    repeated ActionDescription actions = 3;
+
+    /* Readable properties */
+    repeated ActionDescription properties = 4;
+
+}
+
+/* It will often be interesting to know something about the current
+ * state of all the things attached to the adapter. Is the door open right now?
+ * How warm is it? How much of the battery is left..?
+ * All these things can be described with properties. */
+message ThingPropertyDescription {
+
+    /* An id that identifies the property description within the thing */
+    required string id = 1;
+
+
+
+}
+
+
+
+
+
+message PropertyUpdateMessage {
+
+    /* Identifies the message. Backend will acknowledge received property updates. */
+    required string messageId = 1;
+
+    oneof update {
+
+        BatteryLevel batteryLevel = 2;
+
+        Locked locked = 3;
+
+        Open open = 4;
+
+        StatusMessage statusMessage = 5;
+
+        Other other = 6;
+
+    } ;
+
+    message BatteryLevel {
+
+        required int32 percent = 1;
+
+    }
+
+    message Locked {
+
+        required State state = 1;
+
+    }
+
+    message Open {
+
+        required State inOpenPosition = 1;
+
+    }
+
+
+    message StatusMessage {
+
+        required string message = 1;
+
+    }
+
+    message Other {
+
+        required string id = 1;
+        required string value = 2;
+
+    }
+
+}
+
+
+
+/* Boolean on steroids that also
+ * communicates the "don't know" case */
+enum State {
+
+    YES = 0;
+
+    NO = 1;
+
+    UNKNOWN = 2;
+
+}
+
+
+/* An action is something a thing can do like unlocking a door or turning on the lights */
+message ActionDescription {
+
+    /* Identifies the action within the thing it is attached to */
+    required string id = 1;
+
+    /* A human readable description of the action */
+    optional string description = 2;
+
+}
+
+
+
+enum Result {
+
+    SUCCESS = 0; // Executed successfully
+
+    ERROR = 1; // Some permanent error, retrying the action will probably not help
+
+    HICCUP = 2; // Some temporary error, retrying might help.
+
+    DENIED = 3; // Access denied
+
+}
